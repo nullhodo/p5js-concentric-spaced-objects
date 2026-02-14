@@ -11,9 +11,9 @@ const CONFIG = {
     },
     canvasRatio: 4, // ウィンドウサイズの何分の1にするか
     debug: true, // 目安 (中心点) の表示切り替え
-    duration: 60, // アニメーションの長さ (フレーム数)
+    duration: 20, // アニメーションの長さ (フレーム数)
     numRings: 8, // 同心円の数
-    objectSizeRatio: 0.012, // 同心円状に配置されるオブジェクトのサイズ定義に使う、キャンバスサイズに対する比
+    objectSizeRatio: 0.02, // 同心円状に配置されるオブジェクトのサイズ定義に使う、キャンバスサイズに対する比
     objectIdealGapRatio: 0.03 // 同心円状に配置されるオブジェクト間の理想的距離定義に使う、キャンバスサイズに対する比
 };
 
@@ -212,9 +212,9 @@ function draw() {
         circle(obj.x, obj.y, obj.size);
     }
 
-    if (frameCount > CONFIG.duration){
+    if (frameCount > CONFIG.duration) {
         noLoop();
-        console.log("stopped")
+        console.log("stopped");
     }
 }
 

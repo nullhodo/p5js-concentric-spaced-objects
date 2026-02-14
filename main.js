@@ -11,9 +11,10 @@ const CONFIG = {
     },
     canvasRatio: 4, // ウィンドウサイズの何分の1にするか
     debug: true, // 目安 (中心点) の表示切り替え
-    duration: 1, // アニメーションの長さ (フレーム数)
+    duration: 0, // アニメーションの長さ (フレーム数)
     numRings: 6, // 同心円の数
-    objectSizeRatio: 0.05 // 同心円状に配置されるオブジェクトのサイズ定義に使う、キャンバスサイズに対する比
+    objectSizeRatio: 0.02, // 同心円状に配置されるオブジェクトのサイズ定義に使う、キャンバスサイズに対する比
+    objectIdealGapRatio: 0.05 // 同心円状に配置されるオブジェクト間の理想的距離定義に使う、キャンバスサイズに対する比
 };
 
 // グローバル変数
@@ -129,37 +130,80 @@ function setup() {
 
     // テキスト設定
     setTextSettings();
-}
-
-function draw() {
     // スタイル適用と背景塗りつぶし
     applyStyle(CONFIG.mode);
 
     // 座標を中心に移動
     translate(W / 2, H / 2);
+    rotate(-PI / 2);
 
     // --- 描画処理ここから ---
 
-    // テスト描画
-    // const t = (frameCount % 60) / 60;
-    // const r = easing('easeInOutCubic', t) * (W * 0.4);
-    // const [px, py] = polar(r, frameCount * 0.1);
-    // circle(px, py, 10);
+    // オブジェクト初期化
+    let objects = [
+        {
+            x: 0,
+            y: 0,
+            size: W * CONFIG.objectSizeRatio
+        }
+    ];
 
-    noFill();
-    stroke(32);
-    for (i = 0; i < CONFIG.numRings; i++) {
-        r = map(i, 0, CONFIG.numRings - 1, 0, W * 0.6);
-        circle(0, 0, r);
+    // 同心円ごとの計算ループ
+    for (let i = 1; i < CONFIG.numRings; i++) {
+        // 半径の決定
+        let r = map(i, 0, CONFIG.numRings - 1, 0, W * 0.3);
+
+        // 同心円
+        noFill();
+        stroke(CONFIG.drawingColor[CONFIG.mode]);
+        strokeWeight(0.5);
+        circle(0, 0, r * 2);
+
+        // 探索
+        let circumference = TWO_PI * r;
+        let idealGap = W * CONFIG.objectIdealGapRatio;
+
+        let bestCount = 1;
+        let minDiff = Infinity; // 最も小さい誤差を記録する変数
+
+        // n個置いた場合をシミュレーションして、誤差が最小になる n を探す
+        // 最大個数は円周/サイズよりは多くならないはずなので上限を適当に設ける
+        for (let n = 1; n < 300; n++) {
+            let currentGap = circumference / n;
+            let diff = Math.abs(currentGap - idealGap); // 理想との誤差
+
+            if (diff < minDiff) {
+                // 誤差が更新されたら、その個数を採用候補にする
+                minDiff = diff;
+                bestCount = n;
+            } else {
+                // 誤差が大きくなり始めたら、そこがピークなので探索終了 ※高速化のため
+                // ただしnが小さすぎるときは続行させる
+                if (n > 5) break;
+            }
+        }
+
+        // オブジェクトの生成
+        for (let j = 0; j < bestCount; j++) {
+            let theta = map(j, 0, bestCount, 0, TWO_PI);
+            let x = r * cos(theta);
+            let y = r * sin(theta);
+
+            objects.push({
+                x: x,
+                y: y,
+                size: W * CONFIG.objectSizeRatio
+            });
+        }
     }
 
-    // --- 描画処理ここまで ---
+    // 描画
+    noStroke();
+    fill(CONFIG.drawingColor[CONFIG.mode]);
 
-    // デバッグ表示 (中心点)
-    // if (CONFIG.debug) drawDebugMarker(0, 0);
-
-    // アニメーション終了判定
-    if (frameCount > CONFIG.duration) noLoop();
+    for (let obj of objects) {
+        circle(obj.x, obj.y, obj.size);
+    }
 }
 
 // --- 3. DRAWING HELPERS (描画・スタイル補助) ---

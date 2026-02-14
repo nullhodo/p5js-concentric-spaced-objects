@@ -11,10 +11,10 @@ const CONFIG = {
     },
     canvasRatio: 4, // ウィンドウサイズの何分の1にするか
     debug: true, // 目安 (中心点) の表示切り替え
-    duration: 0, // アニメーションの長さ (フレーム数)
-    numRings: 6, // 同心円の数
-    objectSizeRatio: 0.02, // 同心円状に配置されるオブジェクトのサイズ定義に使う、キャンバスサイズに対する比
-    objectIdealGapRatio: 0.05 // 同心円状に配置されるオブジェクト間の理想的距離定義に使う、キャンバスサイズに対する比
+    duration: 60, // アニメーションの長さ (フレーム数)
+    numRings: 8, // 同心円の数
+    objectSizeRatio: 0.012, // 同心円状に配置されるオブジェクトのサイズ定義に使う、キャンバスサイズに対する比
+    objectIdealGapRatio: 0.03 // 同心円状に配置されるオブジェクト間の理想的距離定義に使う、キャンバスサイズに対する比
 };
 
 // グローバル変数
@@ -130,6 +130,13 @@ function setup() {
 
     // テキスト設定
     setTextSettings();
+
+    frameRate(1);
+}
+
+function draw() {
+    CONFIG.objectIdealGapRatio += 0.01;
+
     // スタイル適用と背景塗りつぶし
     applyStyle(CONFIG.mode);
 
@@ -203,6 +210,11 @@ function setup() {
 
     for (let obj of objects) {
         circle(obj.x, obj.y, obj.size);
+    }
+
+    if (frameCount > CONFIG.duration){
+        noLoop();
+        console.log("stopped")
     }
 }
 
